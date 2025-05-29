@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -8,6 +8,15 @@ function App() {
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [darkMode, setDarkMode] = useState(false);
+
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add('dark');
+        } else {
+            document.body.classList.remove('dark');
+        }
+    }, [darkMode]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,50 +35,54 @@ function App() {
     };
 
     return (
-        <div className="main-wrapper d-flex justify-content-center align-items-center">
-            <div className="glass-card p-5 shadow-lg">
-                <h1 className="text-center mb-4 title">Drug Design ViT Predictor</h1>
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group mb-4">
-                        <label htmlFor="smilesInput" className="form-label label-text">Enter SMILES Notation</label>
+        <>
+            <button
+                className="dark-toggle"
+                onClick={() => setDarkMode(!darkMode)}
+                aria-label="Toggle dark mode"
+            >
+                {darkMode ? 'Light Mode' : 'Dark Mode'}
+            </button>
+
+            <div className="main-wrapper d-flex flex-column justify-content-center align-items-center">
+                <div className="glass-card">
+                    <h1 className="title">Drug Design ViT Predictor</h1>
+                    <form onSubmit={handleSubmit}>
+                        <label htmlFor="smilesInput" className="label-text">Enter SMILES Notation</label>
                         <input
                             type="text"
                             id="smilesInput"
-                            className="form-control input-field"
+                            className="input-field"
                             value={smiles}
                             onChange={(e) => setSmiles(e.target.value)}
                             placeholder="e.g., CCO"
                             required
                         />
-                    </div>
-                    <div className="d-grid">
-                        <button type="submit" className="btn btn-custom" disabled={loading}>
-                            {loading ? 'Predicting...' : 'Predict'}
+                        <button type="submit" className="btn-custom" disabled={loading}>
+                            {loading ? <div className="spinner" /> : 'Predict'}
                         </button>
-                    </div>
-                </form>
+                    </form>
 
-                {error && <div className="alert alert-danger mt-3">{error}</div>}
+                    {error && <div className="alert">{error}</div>}
 
-                {result && (
-                    <div className="result-box mt-4 p-4 rounded-4">
-                        <h5 className="fw-bold mb-3">Prediction Result</h5>
-                        <p><strong>SMILES:</strong> {result.smiles}</p>
-                        <p><strong>Activity:</strong> {result.activity}</p>
-                        {result.image && (
-                            <div className="mt-3">
-                                <strong>Structure:</strong>
+                    {result && (
+                        <div className="result-box" key={result.smiles}>
+                            <h5>Prediction Result</h5>
+                            <p><strong>SMILES:</strong> {result.smiles}</p>
+                            <p><strong>Activity:</strong> {result.activity}</p>
+                            {result.image && (
                                 <img
                                     src={`data:image/png;base64,${result.image}`}
                                     alt="Molecular Structure"
-                                    className="img-fluid mt-2 result-image"
+                                    className="result-image"
+                                    loading="lazy"
                                 />
-                            </div>
-                        )}
-                    </div>
-                )}
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 
